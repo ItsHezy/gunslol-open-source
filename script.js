@@ -11,6 +11,8 @@ function initMedia() {
   backgroundMusic.volume = 0.3;
   backgroundVideo.muted = true; 
 
+  backgroundVideo.load();
+  
   
   backgroundVideo.play().catch(err => {
     console.error("Failed to play background video:", err);
@@ -403,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ease: 'power2.in',
       onComplete: () => {
         backgroundVideo.src = videoSrc;
+        backgroundVideo.load();
 
         if (currentAudio) {
           currentAudio.pause();
