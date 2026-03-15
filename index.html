@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JAQLIV Profile</title>
+    <title>Hezy</title>
     <style>
         * {
             margin: 0;
@@ -842,7 +842,7 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Retro+Gaming&display=swap" rel="stylesheet">
 </head>
-<body class="home-theme" onload="initMedia()">
+<body class="rain-theme" onload="initMedia()">
     
     <div class="custom-cursor"></div>
 
@@ -854,7 +854,7 @@
     <div class="container">
         
         <video id="background" autoplay loop muted playsinline webkit-playsinline>
-            <source src="assets/background.mp4" type="video/mp4">
+            <source src="assets/rain_background.mov" type="video/quicktime">
         </video>
 
         
@@ -870,11 +870,11 @@
         <div id="profile-block">
             <div class="profile-header">
                 <div class="profile-container">
-                    <img src="assets/profile.gif" alt="Profile" class="profile-picture">
+                    <img src="assets/hezy-profile.jpg" alt="Hezy profile picture" class="profile-picture">
                 </div>
                 <div class="profile-info">
                     <div class="name-and-badges">
-                        <div id="profile-name">JAQLIV</div>
+                        <div id="profile-name">Hezy</div>
                         <div class="badge-box">
                             <div class="badge-box-inner">
                                 <div class="badge-group">
@@ -899,20 +899,8 @@
                                         <span class="tooltip">Bug Bounty</span>
                                     </div>
                                     <div class="badge-container">
-                                        <img src="assets/hated_guns.gif" alt="Hated by Guns.lol" class="badge">
-                                        <span class="tooltip">Hated by Guns.lol</span>
-                                    </div>
-                                    <div class="badge-container">
-                                        <img src="assets/hated_fakecrime.gif" alt="Hated by Fakecrime.bio" class="badge">
-                                        <span class="tooltip">Hated by Fakecrime.bio</span>
-                                    </div>
-                                    <div class="badge-container">
                                         <img src="assets/verified.gif" alt="Verified" class="badge">
                                         <span class="tooltip">Verified</span>
-                                    </div>
-                                    <div class="badge-container">
-                                        <img src="assets/rule_maker.gif" alt="Rule Maker" class="badge">
-                                        <span class="tooltip">Rule Maker</span>
                                     </div>
                                 </div>
                             </div>
@@ -927,16 +915,13 @@
             <div class="profile-footer">
 
                 <div class="social-links">
-                    <a href="#" onclick="return false;" aria-label="Discord link coming soon">
+                    <a href="#" id="discord-link" aria-label="Copy Discord username">
                         <img src="assets/discord.png" alt="Discord" class="social-icon">
                     </a>
                     <a href="https://github.com/ItsHezy" target="_blank">
                         <img src="assets/github.png" alt="GitHub" class="social-icon">
                     </a>
-                    <a href="#" onclick="return false;" aria-label="YouTube link coming soon">
-                        <img src="assets/youtube.png" alt="YouTube" class="social-icon">
-                    </a>
-                    <a href="#" onclick="return false;" aria-label="TikTok link coming soon">
+                    <a href="https://www.tiktok.com/@hezy.me" target="_blank" rel="noreferrer" aria-label="Visit Hezy on TikTok">
                         <img src="assets/tiktok.png" alt="TikTok" class="social-icon">
                     </a>
                 </div>
@@ -993,16 +978,6 @@
             <button id="results-theme">View Results</button>
             <div id="results-hint" class="hidden">Click again to return to profile</div>
         </div>
-
-
-        <div class="controls">
-            <div id="home-theme" class="theme-button">1</div>
-            <div id="hacker-theme" class="theme-button">2</div>
-            <div id="rain-theme" class="theme-button">3</div>
-            <div id="anime-theme" class="theme-button">4</div>
-            <div id="car-theme" class="theme-button">5</div>
-        </div>
-
 
         <div class="top-controls">
             <div class="volume-control">

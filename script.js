@@ -2,7 +2,7 @@ let hasUserInteracted = false;
 
 function initMedia() {
   console.log("initMedia called");
-  const backgroundMusic = document.getElementById('background-music');
+  const backgroundMusic = document.getElementById('rain-music');
   const backgroundVideo = document.getElementById('background');
   if (!backgroundMusic || !backgroundVideo) {
     console.error("Media elements not found");
@@ -28,11 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const rainMusic = document.getElementById('rain-music');
   const animeMusic = document.getElementById('anime-music');
   const carMusic = document.getElementById('car-music');
-  const homeButton = document.getElementById('home-theme');
-  const hackerButton = document.getElementById('hacker-theme');
-  const rainButton = document.getElementById('rain-theme');
-  const animeButton = document.getElementById('anime-theme');
-  const carButton = document.getElementById('car-theme');
+  const discordLink = document.getElementById('discord-link');
   const resultsButtonContainer = document.getElementById('results-button-container');
   const resultsButton = document.getElementById('results-theme');
   const volumeIcon = document.getElementById('volume-icon');
@@ -56,6 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const cursor = document.querySelector('.custom-cursor');
   const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+
+  document.documentElement.style.setProperty('--primary-color', '#1E3A8A');
 
   if (isTouchDevice) {
     document.body.classList.add('touch-device');
@@ -141,8 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   startScreen.addEventListener('click', () => {
     startScreen.classList.add('hidden');
-    backgroundMusic.muted = false;
-    backgroundMusic.play().catch(err => {
+    currentAudio.muted = false;
+    currentAudio.play().catch(err => {
       console.error("Failed to play music after start screen click:", err);
     });
     profileBlock.classList.remove('hidden');
@@ -172,8 +170,8 @@ document.addEventListener('DOMContentLoaded', () => {
   startScreen.addEventListener('touchstart', (e) => {
     e.preventDefault();
     startScreen.classList.add('hidden');
-    backgroundMusic.muted = false;
-    backgroundMusic.play().catch(err => {
+    currentAudio.muted = false;
+    currentAudio.play().catch(err => {
       console.error("Failed to play music after start screen touch:", err);
     });
     profileBlock.classList.remove('hidden');
@@ -201,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  const name = "JAQLIV";
+  const name = "Hezy";
   let nameText = '';
   let nameIndex = 0;
   let isNameDeleting = false;
@@ -274,8 +272,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 500);
 
 
-  let currentAudio = backgroundMusic;
+  let currentAudio = rainMusic;
   let isMuted = false;
+
+  function copyDiscordName(event) {
+    event.preventDefault();
+    const discordName = 'itshezy';
+
+    navigator.clipboard.writeText(discordName).then(() => {
+      const originalLabel = discordLink.getAttribute('aria-label');
+      discordLink.setAttribute('aria-label', 'Discord username copied');
+      setTimeout(() => {
+        discordLink.setAttribute('aria-label', originalLabel ?? 'Copy Discord username');
+      }, 1600);
+    }).catch((err) => {
+      console.error('Failed to copy Discord username:', err);
+    });
+  }
+
+  discordLink.addEventListener('click', copyDiscordName);
+  discordLink.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    copyDiscordName(e);
+  });
 
   volumeIcon.addEventListener('click', () => {
     isMuted = !isMuted;
@@ -429,48 +448,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-
-  homeButton.addEventListener('click', () => {
-    switchTheme('assets/background.mp4', backgroundMusic, 'home-theme');
-  });
-  homeButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    switchTheme('assets/background.mp4', backgroundMusic, 'home-theme');
-  });
-
-  hackerButton.addEventListener('click', () => {
-    switchTheme('assets/hacker_background.mp4', hackerMusic, 'hacker-theme', hackerOverlay, false);
-  });
-  hackerButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    switchTheme('assets/hacker_background.mp4', hackerMusic, 'hacker-theme', hackerOverlay, false);
-  });
-
-  rainButton.addEventListener('click', () => {
-    switchTheme('assets/rain_background.mov', rainMusic, 'rain-theme', snowOverlay, true);
-  });
-  rainButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    switchTheme('assets/rain_background.mov', rainMusic, 'rain-theme', snowOverlay, true);
-  });
-
-  animeButton.addEventListener('click', () => {
-    switchTheme('assets/anime_background.mp4', animeMusic, 'anime-theme');
-  });
-  animeButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    switchTheme('assets/anime_background.mp4', animeMusic, 'anime-theme');
-  });
-
-  carButton.addEventListener('click', () => {
-    switchTheme('assets/car_background.mp4', carMusic, 'car-theme');
-  });
-  carButton.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    switchTheme('assets/car_background.mp4', carMusic, 'car-theme');
-  });
-
- 
   function handleTilt(e, element) {
     const rect = element.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
