@@ -1,5 +1,5 @@
 let hasUserInteracted = false;
-const LANYARD_USER_ID = '';
+const LANYARD_USER_ID = '970348014298361897';
 const MIN_VISITORS = 50000;
 const MAX_VISITORS = 150000;
 const LANYARD_POLL_INTERVAL_MS = 15000;
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const artists = Array.isArray(spotify.artist)
           ? spotify.artist.join(', ')
           : spotify.artist;
-        setNowPlayingState(`${spotify.song} — ${artists}`);
+        setNowPlayingState(`${spotify.song} - ${artists}`);
         return;
       }
 
