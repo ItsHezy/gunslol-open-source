@@ -181,10 +181,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      setNowPlayingState('Nothing on Spotify right now.');
+      setNowPlayingState('', false);
     } catch (error) {
       console.error('Failed to load Lanyard presence:', error);
-      setNowPlayingState('Live music status is unavailable right now.');
+      setNowPlayingState('', false);
     }
   }
 
