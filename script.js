@@ -1,4 +1,8 @@
 let hasUserInteracted = false;
+const LANYARD_USER_ID = '';
+const MIN_VISITORS = 50000;
+const MAX_VISITORS = 150000;
+const LANYARD_POLL_INTERVAL_MS = 15000;
 
 function initMedia() {
   console.log("initMedia called");
@@ -24,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const startText = document.getElementById('start-text');
   const profileName = document.getElementById('profile-name');
   const profileBio = document.getElementById('profile-bio');
+  const nowPlaying = document.getElementById('now-playing');
+  const nowPlayingTrack = document.getElementById('now-playing-track');
   const visitorCount = document.getElementById('visitor-count');
   const backgroundMusic = document.getElementById('background-music');
   const hackerMusic = document.getElementById('hacker-music');
@@ -119,24 +125,76 @@ document.addEventListener('DOMContentLoaded', () => {
   function initializeVisitorCounter() {
     let totalVisitors = localStorage.getItem('totalVisitorCount');
     if (!totalVisitors) {
-      totalVisitors = 921234;
-      localStorage.setItem('totalVisitorCount', totalVisitors);
+      totalVisitors = Math.floor(Math.random() * (MAX_VISITORS - MIN_VISITORS + 1)) + MIN_VISITORS;
+      localStorage.setItem('totalVisitorCount', String(totalVisitors));
     } else {
-      totalVisitors = parseInt(totalVisitors);
+      totalVisitors = parseInt(totalVisitors, 10);
+    }
+
+    if (Number.isNaN(totalVisitors) || totalVisitors < MIN_VISITORS || totalVisitors > MAX_VISITORS) {
+      totalVisitors = Math.floor(Math.random() * (MAX_VISITORS - MIN_VISITORS + 1)) + MIN_VISITORS;
+      localStorage.setItem('totalVisitorCount', String(totalVisitors));
     }
 
     const hasVisited = localStorage.getItem('hasVisited');
     if (!hasVisited) {
-      totalVisitors++;
-      localStorage.setItem('totalVisitorCount', totalVisitors);
+      totalVisitors = Math.min(totalVisitors + 1, MAX_VISITORS);
+      localStorage.setItem('totalVisitorCount', String(totalVisitors));
       localStorage.setItem('hasVisited', 'true');
     }
 
     visitorCount.textContent = totalVisitors.toLocaleString();
   }
 
+  function setNowPlayingState(text, show = true) {
+    if (!nowPlaying || !nowPlayingTrack) {
+      return;
+    }
+
+    nowPlayingTrack.textContent = text;
+    nowPlaying.classList.toggle('hidden', !show);
+  }
+
+  async function refreshNowPlaying() {
+    if (!LANYARD_USER_ID || !nowPlaying || !nowPlayingTrack) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://api.lanyard.rest/v1/users/${LANYARD_USER_ID}`, {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Lanyard returned ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const data = payload?.data;
+      const spotify = data?.spotify;
+
+      if (data?.listening_to_spotify && spotify?.song) {
+        const artists = Array.isArray(spotify.artist)
+          ? spotify.artist.join(', ')
+          : spotify.artist;
+        setNowPlayingState(`${spotify.song} — ${artists}`);
+        return;
+      }
+
+      setNowPlayingState('Nothing on Spotify right now.');
+    } catch (error) {
+      console.error('Failed to load Lanyard presence:', error);
+      setNowPlayingState('Live music status is unavailable right now.');
+    }
+  }
+
 
   initializeVisitorCounter();
+  refreshNowPlaying();
+
+  if (LANYARD_USER_ID) {
+    setInterval(refreshNowPlaying, LANYARD_POLL_INTERVAL_MS);
+  }
 
 
   startScreen.addEventListener('click', () => {
