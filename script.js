@@ -1,8 +1,4 @@
 let hasUserInteracted = false;
-const LANYARD_USER_ID = '970348014298361897';
-const MIN_VISITORS = 50000;
-const MAX_VISITORS = 150000;
-const LANYARD_POLL_INTERVAL_MS = 15000;
 
 function initMedia() {
   console.log("initMedia called");
@@ -15,8 +11,6 @@ function initMedia() {
   backgroundMusic.volume = 0.3;
   backgroundVideo.muted = true; 
 
-  backgroundVideo.load();
-  
   
   backgroundVideo.play().catch(err => {
     console.error("Failed to play background video:", err);
@@ -28,15 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const startText = document.getElementById('start-text');
   const profileName = document.getElementById('profile-name');
   const profileBio = document.getElementById('profile-bio');
-  const nowPlaying = document.getElementById('now-playing');
-  const nowPlayingTrack = document.getElementById('now-playing-track');
   const visitorCount = document.getElementById('visitor-count');
-  const backgroundMusic = document.getElementById('background-music');
-  const hackerMusic = document.getElementById('hacker-music');
-  const rainMusic = document.getElementById('rain-music');
-  const animeMusic = document.getElementById('anime-music');
-  const carMusic = document.getElementById('car-music');
-  const discordLink = document.getElementById('discord-link');
+  const backgroundMusic = document.getElementById('rain-music');
   const resultsButtonContainer = document.getElementById('results-button-container');
   const resultsButton = document.getElementById('results-theme');
   const volumeIcon = document.getElementById('volume-icon');
@@ -57,11 +44,170 @@ document.addEventListener('DOMContentLoaded', () => {
   const socialIcons = document.querySelectorAll('.social-icon');
   const badges = document.querySelectorAll('.badge');
 
+  // Lanyard integration with WebSocket for real-time updates
+  let currentActivities = [];
+  let currentUser = {};
+  let currentStatus = '';
+
+  function updateUI() {
+    // Clear existing
+    document.querySelectorAll('.badge-container').forEach(badge => {
+      if (badge.querySelector('.tooltip') && (badge.querySelector('.tooltip').textContent.includes('Discord') || badge.querySelector('.tooltip').textContent.includes('Display Name'))) {
+        badge.remove();
+      }
+    });
+    document.querySelectorAll('.activities-container').forEach(container => container.remove());
+
+    // Avatar decoration
+    if (currentUser.avatar_decoration_data) {
+      const existing = document.querySelector('.avatar-decoration');
+      if (!existing) {
+        const decorationImg = document.createElement('img');
+        decorationImg.src = `https://cdn.discordapp.com/avatar-decoration-presets/${currentUser.avatar_decoration_data.asset}.png?size=128`;
+        decorationImg.className = 'avatar-decoration';
+        decorationImg.style.position = 'absolute';
+        decorationImg.style.top = '-10px';
+        decorationImg.style.left = '-10px';
+        decorationImg.style.width = '170px';
+        decorationImg.style.height = '170px';
+        decorationImg.style.pointerEvents = 'none';
+        profileContainer.style.position = 'relative';
+        profileContainer.appendChild(decorationImg);
+      }
+    }
+
+
+    // Activities
+    const activitiesContainer = document.createElement('div');
+    activitiesContainer.className = 'activities-container';
+    activitiesContainer.style.marginTop = '10px';
+    activitiesContainer.style.display = 'flex';
+    activitiesContainer.style.flexDirection = 'column';
+    activitiesContainer.style.gap = '10px';
+
+    currentActivities.forEach(activity => {
+      if (activity.type === 0) { // Playing game
+        const gameDiv = document.createElement('div');
+        gameDiv.className = 'activity-item';
+        gameDiv.style.display = 'flex';
+        gameDiv.style.alignItems = 'center';
+        gameDiv.style.gap = '10px';
+        gameDiv.style.background = 'rgba(255, 255, 255, 0.1)';
+        gameDiv.style.padding = '8px';
+        gameDiv.style.borderRadius = '10px';
+        if (activity.assets && (activity.assets.large_image || activity.assets.small_image)) {
+          const img = document.createElement('img');
+          const asset = activity.assets.large_image || activity.assets.small_image;
+          img.src = asset.startsWith('mp:') ? `https://media.discordapp.net/${asset.replace('mp:', '')}` : `https://cdn.discordapp.com/app-assets/${activity.application_id}/${asset}.png`;
+          img.style.width = '40px';
+          img.style.height = '40px';
+          img.style.borderRadius = '5px';
+          gameDiv.appendChild(img);
+        }
+        const textDiv = document.createElement('div');
+        textDiv.innerHTML = `<strong>${activity.name}</strong><br>${activity.details || ''}`;
+        gameDiv.appendChild(textDiv);
+        activitiesContainer.appendChild(gameDiv);
+      } else if (activity.type === 2) { // Listening to Spotify
+        const musicDiv = document.createElement('div');
+        musicDiv.className = 'activity-item';
+        musicDiv.style.display = 'flex';
+        musicDiv.style.alignItems = 'center';
+        musicDiv.style.gap = '10px';
+        musicDiv.style.background = 'rgba(255, 255, 255, 0.1)';
+        musicDiv.style.padding = '8px';
+        musicDiv.style.borderRadius = '10px';
+        if (activity.assets && activity.assets.large_image) {
+          const img = document.createElement('img');
+          img.src = `https://i.scdn.co/image/${activity.assets.large_image.replace('spotify:', '')}`;
+          img.style.width = '40px';
+          img.style.height = '40px';
+          img.style.borderRadius = '5px';
+          musicDiv.appendChild(img);
+        }
+        const textDiv = document.createElement('div');
+        textDiv.style.flex = '1';
+        textDiv.innerHTML = `<strong>${activity.details}</strong><br>${activity.state}`;
+        musicDiv.appendChild(textDiv);
+
+        // Timeline
+        if (activity.timestamps) {
+          const timelineDiv = document.createElement('div');
+          timelineDiv.style.width = '100px';
+          timelineDiv.style.height = '5px';
+          timelineDiv.style.background = 'rgba(255, 255, 255, 0.3)';
+          timelineDiv.style.borderRadius = '5px';
+          timelineDiv.style.overflow = 'hidden';
+          const progressDiv = document.createElement('div');
+          progressDiv.style.height = '100%';
+          progressDiv.style.background = '#1DB954';
+          progressDiv.style.width = '0%';
+          timelineDiv.appendChild(progressDiv);
+          musicDiv.appendChild(timelineDiv);
+
+          // Update timeline in real-time
+          function updateTimeline() {
+            const now = Date.now();
+            const start = activity.timestamps.start;
+            const end = activity.timestamps.end;
+            const progress = ((now - start) / (end - start)) * 100;
+            progressDiv.style.width = Math.min(progress, 100) + '%';
+            if (progress < 100) {
+              requestAnimationFrame(updateTimeline);
+            }
+          }
+          updateTimeline();
+        }
+
+        activitiesContainer.appendChild(musicDiv);
+      }
+    });
+
+    // Insert after bio
+    const bioElement = document.getElementById('profile-bio');
+    bioElement.parentNode.insertBefore(activitiesContainer, bioElement.nextSibling);
+  }
+
+  function connectWebSocket() {
+    const ws = new WebSocket('wss://api.lanyard.rest/socket');
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        op: 2,
+        d: {
+          subscribe_to_id: '970348014298361897'
+        }
+      }));
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.op === 1) {
+        // Heartbeat
+        ws.send(JSON.stringify({ op: 3 }));
+      } else if (data.t === 'INIT_STATE' || data.t === 'PRESENCE_UPDATE') {
+        currentUser = data.d.discord_user;
+        currentActivities = data.d.activities;
+        currentStatus = data.d.discord_status;
+        updateUI();
+      }
+    };
+
+    ws.onclose = () => {
+      // Reconnect after some time
+      setTimeout(connectWebSocket, 5000);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+  }
+
+  connectWebSocket();
+
   
   const cursor = document.querySelector('.custom-cursor');
   const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
-
-  document.documentElement.style.setProperty('--primary-color', '#1E3A8A');
 
   if (isTouchDevice) {
     document.body.classList.add('touch-device');
@@ -101,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
-  const startMessage = "Click here to see the motion baby";
+  const startMessage = "Click here to see the motion";
   let startTextContent = '';
   let startIndex = 0;
   let startCursorVisible = true;
@@ -125,82 +271,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function initializeVisitorCounter() {
     let totalVisitors = localStorage.getItem('totalVisitorCount');
     if (!totalVisitors) {
-      totalVisitors = Math.floor(Math.random() * (MAX_VISITORS - MIN_VISITORS + 1)) + MIN_VISITORS;
-      localStorage.setItem('totalVisitorCount', String(totalVisitors));
+      totalVisitors = 921234;
+      localStorage.setItem('totalVisitorCount', totalVisitors);
     } else {
-      totalVisitors = parseInt(totalVisitors, 10);
-    }
-
-    if (Number.isNaN(totalVisitors) || totalVisitors < MIN_VISITORS || totalVisitors > MAX_VISITORS) {
-      totalVisitors = Math.floor(Math.random() * (MAX_VISITORS - MIN_VISITORS + 1)) + MIN_VISITORS;
-      localStorage.setItem('totalVisitorCount', String(totalVisitors));
+      totalVisitors = parseInt(totalVisitors);
     }
 
     const hasVisited = localStorage.getItem('hasVisited');
     if (!hasVisited) {
-      totalVisitors = Math.min(totalVisitors + 1, MAX_VISITORS);
-      localStorage.setItem('totalVisitorCount', String(totalVisitors));
+      totalVisitors++;
+      localStorage.setItem('totalVisitorCount', totalVisitors);
       localStorage.setItem('hasVisited', 'true');
     }
 
     visitorCount.textContent = totalVisitors.toLocaleString();
   }
 
-  function setNowPlayingState(text, show = true) {
-    if (!nowPlaying || !nowPlayingTrack) {
-      return;
-    }
-
-    nowPlayingTrack.textContent = text;
-    nowPlaying.classList.toggle('hidden', !show);
-  }
-
-  async function refreshNowPlaying() {
-    if (!LANYARD_USER_ID || !nowPlaying || !nowPlayingTrack) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`https://api.lanyard.rest/v1/users/${LANYARD_USER_ID}`, {
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Lanyard returned ${response.status}`);
-      }
-
-      const payload = await response.json();
-      const data = payload?.data;
-      const spotify = data?.spotify;
-
-      if (data?.listening_to_spotify && spotify?.song) {
-        const artists = Array.isArray(spotify.artist)
-          ? spotify.artist.join(', ')
-          : spotify.artist;
-        setNowPlayingState(`${spotify.song} - ${artists}`);
-        return;
-      }
-
-      setNowPlayingState('', false);
-    } catch (error) {
-      console.error('Failed to load Lanyard presence:', error);
-      setNowPlayingState('', false);
-    }
-  }
-
 
   initializeVisitorCounter();
-  refreshNowPlaying();
-
-  if (LANYARD_USER_ID) {
-    setInterval(refreshNowPlaying, LANYARD_POLL_INTERVAL_MS);
-  }
 
 
   startScreen.addEventListener('click', () => {
     startScreen.classList.add('hidden');
-    currentAudio.muted = false;
-    currentAudio.play().catch(err => {
+    backgroundMusic.muted = false;
+    backgroundMusic.play().catch(err => {
       console.error("Failed to play music after start screen click:", err);
     });
     profileBlock.classList.remove('hidden');
@@ -230,8 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
   startScreen.addEventListener('touchstart', (e) => {
     e.preventDefault();
     startScreen.classList.add('hidden');
-    currentAudio.muted = false;
-    currentAudio.play().catch(err => {
+    backgroundMusic.muted = false;
+    backgroundMusic.play().catch(err => {
       console.error("Failed to play music after start screen touch:", err);
     });
     profileBlock.classList.remove('hidden');
@@ -294,8 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   const bioMessages = [
-    "Fu*k Guns.lol & Fakecrime.bio got banned too often, so I created my own.",
-    "\"Hello, World!\""
+    "Forget Guns.lol & Fakecrime.bio got banned too often, so I created my own.",
+    "\"Best LARP\""
   ];
   let bioText = '';
   let bioIndex = 0;
@@ -332,29 +426,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 500);
 
 
-  let currentAudio = rainMusic;
+  let currentAudio = backgroundMusic;
   let isMuted = false;
-
-  function copyDiscordName(event) {
-    event.preventDefault();
-    const discordName = 'itshezy';
-
-    navigator.clipboard.writeText(discordName).then(() => {
-      const originalLabel = discordLink.getAttribute('aria-label');
-      discordLink.setAttribute('aria-label', 'Discord username copied');
-      setTimeout(() => {
-        discordLink.setAttribute('aria-label', originalLabel ?? 'Copy Discord username');
-      }, 1600);
-    }).catch((err) => {
-      console.error('Failed to copy Discord username:', err);
-    });
-  }
-
-  discordLink.addEventListener('click', copyDiscordName);
-  discordLink.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    copyDiscordName(e);
-  });
 
   volumeIcon.addEventListener('click', () => {
     isMuted = !isMuted;
@@ -381,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  transparencySlider.addEventListener('input', () => {
+  function updateTransparency() {
     const opacity = transparencySlider.value;
     if (opacity == 0) {
       profileBlock.style.background = 'rgba(0, 0, 0, 0)';
@@ -431,84 +504,14 @@ document.addEventListener('DOMContentLoaded', () => {
       profileBio.style.opacity = '1';
       visitorCount.style.opacity = '1';
     }
-  });
-
-
-  function switchTheme(videoSrc, audio, themeClass, overlay = null, overlayOverProfile = false) {
-    let primaryColor;
-    switch (themeClass) {
-      case 'home-theme':
-        primaryColor = '#00CED1';
-        break;
-      case 'hacker-theme':
-        primaryColor = '#22C55E';
-        break;
-      case 'rain-theme':
-        primaryColor = '#1E3A8A';
-        break;
-      case 'anime-theme':
-        primaryColor = '#DC2626';
-        break;
-      case 'car-theme':
-        primaryColor = '#EAB308';
-        break;
-      default:
-        primaryColor = '#00CED1';
-    }
-    document.documentElement.style.setProperty('--primary-color', primaryColor);
-
-    gsap.to(backgroundVideo, {
-      opacity: 0,
-      duration: 0.5,
-      ease: 'power2.in',
-      onComplete: () => {
-        backgroundVideo.src = videoSrc;
-        backgroundVideo.load();
-
-        if (currentAudio) {
-          currentAudio.pause();
-          currentAudio.currentTime = 0;
-        }
-        currentAudio = audio;
-        currentAudio.volume = volumeSlider.value;
-        currentAudio.muted = isMuted;
-        currentAudio.play().catch(err => console.error("Failed to play theme music:", err));
-
-        document.body.classList.remove('home-theme', 'hacker-theme', 'rain-theme', 'anime-theme', 'car-theme');
-        document.body.classList.add(themeClass);
-
-        hackerOverlay.classList.add('hidden');
-        snowOverlay.classList.add('hidden');
-        profileBlock.style.zIndex = overlayOverProfile ? 10 : 20;
-        skillsBlock.style.zIndex = overlayOverProfile ? 10 : 20;
-        if (overlay) {
-          overlay.classList.remove('hidden');
-        }
-
-        if (themeClass === 'hacker-theme') {
-          resultsButtonContainer.classList.remove('hidden');
-        } else {
-          resultsButtonContainer.classList.add('hidden');
-          skillsBlock.classList.add('hidden');
-          resultsHint.classList.add('hidden');
-          profileBlock.classList.remove('hidden');
-          gsap.to(profileBlock, { x: 0, opacity: 1, duration: 0.5, ease: 'power2.out' });
-        }
-
-        gsap.to(backgroundVideo, {
-          opacity: 1,
-          duration: 0.5,
-          ease: 'power2.out',
-          onComplete: () => {
-            profileContainer.classList.remove('orbit');
-            void profileContainer.offsetWidth;
-            profileContainer.classList.add('orbit');
-          }
-        });
-      }
-    });
   }
 
+  transparencySlider.addEventListener('input', updateTransparency);
+
+  // Initial transparency
+  updateTransparency();
+
+ 
   function handleTilt(e, element) {
     const rect = element.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
