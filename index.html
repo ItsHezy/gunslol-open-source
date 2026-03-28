@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Hezy's personal profile page with animated cyberpunk visuals, live status, and custom audio controls.">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     <title>Hezy</title>
     <style>
         * {
@@ -10,6 +12,18 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Courier New', monospace;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
         
@@ -264,6 +278,7 @@
             src: url('assets/Angel_wish.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
+            font-display: swap;
         }
 
         #profile-name {
@@ -866,6 +881,9 @@
             }
         }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="assets/Angel_wish.ttf" as="font" type="font/ttf" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Retro+Gaming&display=swap" rel="stylesheet">
 </head>
 <body class="rain-theme" onload="initMedia()">
@@ -879,9 +897,10 @@
 
     <div class="container">
         
-        <video id="background" autoplay loop muted playsinline webkit-playsinline preload="auto">
+        <video id="background" autoplay loop muted playsinline webkit-playsinline preload="none">
             <source src="assets/rain_background.mp4" type="video/mp4">
             <source src="assets/rain_background.mov" type="video/quicktime">
+            <track kind="captions" src="assets/rain_background.vtt" srclang="en" label="English captions">
         </video>
 
         
@@ -897,7 +916,13 @@
         <div id="profile-block">
             <div class="profile-header">
                 <div class="profile-container">
-                    <img src="assets/hezy-profile.jpg" alt="Hezy profile picture" class="profile-picture">
+                    <img src="assets/hezy-profile-210.jpg"
+                         srcset="assets/hezy-profile-210.jpg 210w, assets/hezy-profile.jpg 400w"
+                         sizes="(max-width: 430px) 120px, 150px"
+                         alt="Hezy profile picture"
+                         class="profile-picture"
+                         width="150"
+                         height="150">
                 </div>
                 <div class="profile-info">
                     <div class="name-and-badges">
@@ -906,27 +931,39 @@
                             <div class="badge-box-inner">
                                 <div class="badge-group">
                                     <div class="badge-container">
-                                        <img src="assets/staff.gif" alt="Staff" class="badge">
+                                        <picture>
+                                            <source srcset="assets/staff.webp" type="image/webp">
+                                            <img src="assets/staff.gif" alt="Staff" class="badge" width="32" height="32" loading="lazy">
+                                        </picture>
                                         <span class="tooltip">Staff Member</span>
                                     </div>
                                     <div class="badge-container">
-                                        <img src="assets/owner.gif" alt="Owner" class="badge">
+                                        <picture>
+                                            <source srcset="assets/owner.webp" type="image/webp">
+                                            <img src="assets/owner.gif" alt="Owner" class="badge" width="32" height="32" loading="lazy">
+                                        </picture>
                                         <span class="tooltip">Owner</span>
                                     </div>
                                     <div class="badge-container">
-                                        <img src="assets/partner.gif" alt="Partner" class="badge">
+                                        <picture>
+                                            <source srcset="assets/partner.webp" type="image/webp">
+                                            <img src="assets/partner.gif" alt="Partner" class="badge" width="32" height="32" loading="lazy">
+                                        </picture>
                                         <span class="tooltip">Partner</span>
                                     </div>
                                     <div class="badge-container">
-                                        <img src="assets/developer.png" alt="Developer" class="badge">
+                                        <img src="assets/developer.png" alt="Developer" class="badge" width="32" height="32" loading="lazy">
                                         <span class="tooltip">Developer</span>
                                     </div>
                                     <div class="badge-container">
-                                        <img src="assets/bug_bounty.gif" alt="Bug Bounty" class="badge">
+                                        <img src="assets/bug_bounty.gif" alt="Bug Bounty" class="badge" width="32" height="32" loading="lazy">
                                         <span class="tooltip">Bug Bounty</span>
                                     </div>
                                     <div class="badge-container">
-                                        <img src="assets/verified.gif" alt="Verified" class="badge">
+                                        <picture>
+                                            <source srcset="assets/verified.webp" type="image/webp">
+                                            <img src="assets/verified.gif" alt="Verified" class="badge" width="32" height="32" loading="lazy">
+                                        </picture>
                                         <span class="tooltip">Verified</span>
                                     </div>
                                 </div>
@@ -1012,12 +1049,14 @@
 
         <div class="top-controls">
             <div class="volume-control">
+                <label for="volume-slider" class="sr-only">Volume</label>
                 <svg id="volume-icon" class="volume-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
                 </svg>
                 <input id="volume-slider" class="slider" type="range" min="0" max="1" step="0.01" value="0.3">
             </div>
             <div class="transparency-control">
+                <label for="transparency-slider" class="sr-only">Transparency</label>
                 <svg class="transparency-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -1028,19 +1067,19 @@
     </div>
 
 
-    <audio id="background-music" loop>
+    <audio id="background-music" loop preload="none">
         <source src="assets/background_music.mp3" type="audio/mp3">
     </audio>
-    <audio id="hacker-music" loop muted>
+    <audio id="hacker-music" loop muted preload="none">
         <source src="assets/hacker_music.mp3" type="audio/mp3">
     </audio>
-    <audio id="rain-music" loop muted>
+    <audio id="rain-music" loop muted preload="none">
         <source src="assets/rain_music.mp3" type="audio/mp3">
     </audio>
-    <audio id="anime-music" loop muted>
+    <audio id="anime-music" loop muted preload="none">
         <source src="assets/anime_music.mp3" type="audio/mp3">
     </audio>
-    <audio id="car-music" loop muted>
+    <audio id="car-music" loop muted preload="none">
         <source src="assets/car_music.mp3" type="audio/mp3">
     </audio>
 

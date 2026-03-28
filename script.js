@@ -169,7 +169,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function connectWebSocket() {
-    const ws = new WebSocket('wss://api.lanyard.rest/socket');
+    let ws;
+    try {
+      ws = new WebSocket('wss://api.lanyard.rest/socket');
+    } catch (initError) {
+      console.error('WebSocket initialization failed:', initError);
+      setTimeout(connectWebSocket, 10000);
+      return;
+    }
 
     ws.onopen = () => {
       ws.send(JSON.stringify({
@@ -193,13 +200,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    ws.onclose = () => {
-      // Reconnect after some time
-      setTimeout(connectWebSocket, 5000);
+    ws.onclose = (event) => {
+      const code = event?.code ?? 0;
+      const reason = event?.reason || '';
+      console.warn(`WebSocket closed (code=${code})`, reason);
+      const reconnectDelay = (!navigator.onLine || code === 1006) ? 10000 : 5000;
+      if (navigator.onLine) {
+        setTimeout(connectWebSocket, reconnectDelay);
+      } else {
+        window.addEventListener('online', () => setTimeout(connectWebSocket, reconnectDelay), { once: true });
+      }
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error('WebSocket connection failed:', error);
     };
   }
 
