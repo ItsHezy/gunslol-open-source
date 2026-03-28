@@ -44,10 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const socialIcons = document.querySelectorAll('.social-icon');
   const badges = document.querySelectorAll('.badge');
 
+  window.addEventListener('load', initMedia);
+
   // Lanyard integration with WebSocket for real-time updates
   let currentActivities = [];
   let currentUser = {};
   let currentStatus = '';
+  let lanyardReconnectAttempts = 0;
+  const lanyardMaxReconnectAttempts = 5;
 
   function updateUI() {
     // Clear existing
@@ -168,17 +172,30 @@ document.addEventListener('DOMContentLoaded', () => {
     bioElement.parentNode.insertBefore(activitiesContainer, bioElement.nextSibling);
   }
 
+  function scheduleLanyardReconnect() {
+    if (lanyardReconnectAttempts >= lanyardMaxReconnectAttempts) {
+      return;
+    }
+    const delay = Math.min(30000, 1000 * Math.pow(2, lanyardReconnectAttempts));
+    lanyardReconnectAttempts += 1;
+    setTimeout(connectWebSocket, delay);
+  }
+
   function connectWebSocket() {
+    if (lanyardReconnectAttempts >= lanyardMaxReconnectAttempts) {
+      return;
+    }
+
     let ws;
     try {
       ws = new WebSocket('wss://api.lanyard.rest/socket');
     } catch (initError) {
-      console.error('WebSocket initialization failed:', initError);
-      setTimeout(connectWebSocket, 10000);
+      scheduleLanyardReconnect();
       return;
     }
 
     ws.onopen = () => {
+      lanyardReconnectAttempts = 0;
       ws.send(JSON.stringify({
         op: 2,
         d: {
@@ -188,32 +205,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.op === 1) {
-        // Heartbeat
-        ws.send(JSON.stringify({ op: 3 }));
-      } else if (data.t === 'INIT_STATE' || data.t === 'PRESENCE_UPDATE') {
-        currentUser = data.d.discord_user;
-        currentActivities = data.d.activities;
-        currentStatus = data.d.discord_status;
-        updateUI();
+      try {
+        const data = JSON.parse(event.data);
+        if (data.op === 1) {
+          ws.send(JSON.stringify({ op: 3 }));
+        } else if (data.t === 'INIT_STATE' || data.t === 'PRESENCE_UPDATE') {
+          currentUser = data.d.discord_user;
+          currentActivities = data.d.activities;
+          currentStatus = data.d.discord_status;
+          updateUI();
+        }
+      } catch (err) {
+        // silent fallback for malformed presence payloads
       }
     };
 
     ws.onclose = (event) => {
-      const code = event?.code ?? 0;
-      const reason = event?.reason || '';
-      console.warn(`WebSocket closed (code=${code})`, reason);
-      const reconnectDelay = (!navigator.onLine || code === 1006) ? 10000 : 5000;
-      if (navigator.onLine) {
-        setTimeout(connectWebSocket, reconnectDelay);
+      if (lanyardReconnectAttempts >= lanyardMaxReconnectAttempts) {
+        return;
+      }
+      if (!navigator.onLine) {
+        window.addEventListener('online', scheduleLanyardReconnect, { once: true });
       } else {
-        window.addEventListener('online', () => setTimeout(connectWebSocket, reconnectDelay), { once: true });
+        scheduleLanyardReconnect();
       }
     };
 
-    ws.onerror = (error) => {
-      console.error('WebSocket connection failed:', error);
+    ws.onerror = () => {
+      // silent fallback: keep UI functional without console noise
     };
   }
 

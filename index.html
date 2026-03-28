@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hezy's personal profile page with animated cyberpunk visuals, live status, and custom audio controls.">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.discordapp.com https://media.discordapp.net https://i.scdn.co; font-src 'self'; connect-src 'self' wss://api.lanyard.rest; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; upgrade-insecure-requests;">
     <title>Hezy</title>
     <style>
         * {
@@ -881,12 +882,9 @@
             }
         }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" href="assets/Angel_wish.ttf" as="font" type="font/ttf" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Retro+Gaming&display=swap" rel="stylesheet">
 </head>
-<body class="rain-theme" onload="initMedia()">
+<body class="rain-theme">
     
     <div class="custom-cursor"></div>
 
@@ -952,7 +950,10 @@
                                         <span class="tooltip">Partner</span>
                                     </div>
                                     <div class="badge-container">
-                                        <img src="assets/developer.png" alt="Developer" class="badge" width="32" height="32" loading="lazy">
+                                        <picture>
+                                            <source srcset="assets/developer.webp" type="image/webp">
+                                            <img src="assets/developer.png" alt="Developer" class="badge" width="32" height="32" loading="lazy">
+                                        </picture>
                                         <span class="tooltip">Developer</span>
                                     </div>
                                     <div class="badge-container">
@@ -1084,9 +1085,7 @@
     </audio>
 
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
-
+    <script src="assets/gsap.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
