@@ -323,13 +323,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initializeVisitorCounter();
 
+  function playRainMusic(context) {
+    backgroundMusic.muted = false;
+    backgroundMusic.play().catch(err => {
+      if (err?.name !== 'NotAllowedError') {
+        console.error(`Failed to play music after ${context}:`, err);
+      }
+    });
+  }
 
   startScreen.addEventListener('click', () => {
     startScreen.classList.add('hidden');
-    backgroundMusic.muted = false;
-    backgroundMusic.play().catch(err => {
-      console.error("Failed to play music after start screen click:", err);
-    });
+    playRainMusic('start screen click');
     profileBlock.classList.remove('hidden');
     gsap.fromTo(profileBlock,
       { opacity: 0, y: -50 },
@@ -338,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         profileContainer.classList.add('orbit');
       }}
     );
-    if (!isTouchDevice) {
+    if (!isTouchDevice && typeof cursorTrailEffect === 'function') {
       try {
         new cursorTrailEffect({
           length: 10,
@@ -357,10 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
   startScreen.addEventListener('touchstart', (e) => {
     e.preventDefault();
     startScreen.classList.add('hidden');
-    backgroundMusic.muted = false;
-    backgroundMusic.play().catch(err => {
-      console.error("Failed to play music after start screen touch:", err);
-    });
+    playRainMusic('start screen touch');
     profileBlock.classList.remove('hidden');
     gsap.fromTo(profileBlock,
       { opacity: 0, y: -50 },
@@ -369,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
         profileContainer.classList.add('orbit');
       }}
     );
-    if (!isTouchDevice) {
+    if (!isTouchDevice && typeof cursorTrailEffect === 'function') {
       try {
         new cursorTrailEffect({
           length: 10,
