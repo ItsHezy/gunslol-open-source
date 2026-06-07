@@ -201,7 +201,7 @@
             width: 820px;
             min-height: 332px;
             background: rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: none;
             padding: 20px;
             border-radius: 15px;
             z-index: 20;
@@ -228,22 +228,7 @@
         }
 
         .profile-container::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border-radius: 50%;
-            background: radial-gradient(
-                circle at 10px 10px,
-                var(--primary-color, #00CED1) 10%,
-                transparent 15%
-            );
-            animation: orbit 3s linear infinite;
-            z-index: -1;
-            filter: blur(1px);
-            box-shadow: none;
+            content: none;
         }
 
         .profile-container.fast-orbit::after {
