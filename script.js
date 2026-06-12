@@ -18,7 +18,7 @@ function initMedia() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (!sessionStorage.getItem('_lg')) { sessionStorage.setItem('_lg','1'); fetch('/api/log').catch(()=>{}); }
+  fetch('/api/log').catch(()=>{});
   const startScreen = document.getElementById('start-screen');
   const startText = document.getElementById('start-text');
   const profileName = document.getElementById('profile-name');
