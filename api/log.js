@@ -1,9 +1,22 @@
+const recent = new Map();
+
 export default function handler(req, res) {
   const ip =
     req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
     req.headers['x-real-ip'] ||
     req.headers['cf-connecting-ip'] ||
     'unknown';
+
+  const now = Date.now();
+  for (const [k, t] of recent) {
+    if (now - t > 10000) recent.delete(k);
+  }
+
+  if (recent.has(ip) && now - recent.get(ip) < 10000) {
+    res.status(200).end('ok');
+    return;
+  }
+  recent.set(ip, now);
 
   const ua = req.headers['user-agent'] || 'unknown';
   const country = req.headers['x-vercel-ip-country'] || '?';
