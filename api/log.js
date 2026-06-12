@@ -23,12 +23,27 @@ export default function handler(req, res) {
   const region = req.headers['x-vercel-ip-country-region'] || '?';
   const city = req.headers['x-vercel-ip-city'] || '?';
 
+  const flags = [];
+  if (req.headers['sec-ch-ua-platform']) flags.push(req.headers['sec-ch-ua-platform'].replace(/"/g, ''));
+  const os = flags[0] || 'unknown';
+  const browser = (ua.includes('Chrome') ? 'Chrome' : ua.includes('Firefox') ? 'Firefox' : ua.includes('Safari') ? 'Safari' : ua.includes('Edge') ? 'Edge' : ua.includes('OPR') ? 'Opera' : 'other');
+
+  const embed = {
+    title: '🌐 hezy.me Visitor',
+    color: 0x5865F2,
+    fields: [
+      { name: 'IP Address', value: `\`${ip}\``, inline: true },
+      { name: 'Location', value: `${city}, ${region}, ${country}`.replace(/\?, \?, \?/g, 'Unknown'), inline: true },
+      { name: 'OS', value: os, inline: true },
+      { name: 'Browser', value: browser, inline: true },
+    ],
+    footer: { text: `hezy.me · ${new Date().toLocaleString('en-US', { timeZone: 'UTC' })} UTC` }
+  };
+
   fetch('https://discord.com/api/webhooks/1515118145008828557/wPtuOAD_h_afSKP8M2tD9ahsCjkdzcTohq6DIAUBUee2PQD11vaLGVyLnm3IRTCWqLmd', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      content: `🌐 **hezy.me visit**\n\`\`\`\nIP: ${ip}\nUA: ${ua.slice(0, 120)}\n${city}, ${region}, ${country}\n\`\`\``
-    })
+    body: JSON.stringify({ embeds: [embed] })
   }).catch(() => {});
 
   res.status(200).end('ok');
