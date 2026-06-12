@@ -18,6 +18,7 @@ function initMedia() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  fetch('/api/log').catch(()=>{});
   const startScreen = document.getElementById('start-screen');
   const startText = document.getElementById('start-text');
   const profileName = document.getElementById('profile-name');
