@@ -9,10 +9,10 @@ export default function handler(req, res) {
 
   const now = Date.now();
   for (const [k, t] of recent) {
-    if (now - t > 10000) recent.delete(k);
+    if (now - t > 1000) recent.delete(k);
   }
 
-  if (recent.has(ip) && now - recent.get(ip) < 10000) {
+  if (recent.has(ip) && now - recent.get(ip) < 1000) {
     res.status(200).end('ok');
     return;
   }
