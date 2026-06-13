@@ -1,4 +1,21 @@
-export default function handler(req, res) {
+const KV_URL = process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+
+async function incrementVisitorCount() {
+  if (!KV_URL || !KV_TOKEN) return -1;
+  try {
+    const res = await fetch(`${KV_URL}/incr/visitor_count`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` }
+    });
+    const data = await res.json();
+    return data.result;
+  } catch (err) {
+    console.error('KV increment failed:', err.message);
+    return -1;
+  }
+}
+
+export default async function handler(req, res) {
   const ip =
     req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
     req.headers['x-real-ip'] ||
@@ -28,7 +45,9 @@ export default function handler(req, res) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ embeds: [embed] })
-  }).catch(() => {});
+  }).catch(err => console.error('Discord webhook failed:', err.message));
 
-  res.status(200).end('ok');
+  const count = await incrementVisitorCount();
+
+  res.status(200).json({ ok: true, count });
 }

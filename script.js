@@ -18,7 +18,15 @@ function initMedia() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  fetch('/api/log').catch(()=>{});
+  fetch('/api/log')
+    .then(r => r.json())
+    .then(data => {
+      if (data && typeof data.count === 'number' && data.count > 0) {
+        visitorCount.textContent = data.count.toLocaleString();
+        localStorage.setItem('visitorCountCache', data.count);
+      }
+    })
+    .catch(err => console.warn('Visit log failed:', err.message));
   const startScreen = document.getElementById('start-screen');
   const startText = document.getElementById('start-text');
   const profileName = document.getElementById('profile-name');
@@ -303,22 +311,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   function initializeVisitorCounter() {
-    let totalVisitors = localStorage.getItem('totalVisitorCount');
-    if (!totalVisitors) {
-      totalVisitors = 921234;
-      localStorage.setItem('totalVisitorCount', totalVisitors);
-    } else {
-      totalVisitors = parseInt(totalVisitors);
+    const cached = localStorage.getItem('visitorCountCache');
+    if (cached && /^\d+$/.test(cached)) {
+      visitorCount.textContent = parseInt(cached).toLocaleString();
     }
-
-    const hasVisited = localStorage.getItem('hasVisited');
-    if (!hasVisited) {
-      totalVisitors++;
-      localStorage.setItem('totalVisitorCount', totalVisitors);
-      localStorage.setItem('hasVisited', 'true');
-    }
-
-    visitorCount.textContent = totalVisitors.toLocaleString();
   }
 
 
