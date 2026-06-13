@@ -41,13 +41,14 @@ export default async function handler(req, res) {
     footer: { text: `hezy.me · ${new Date().toLocaleString('en-US', { timeZone: 'UTC' })} UTC` }
   };
 
-  fetch('https://discord.com/api/webhooks/1515118145008828557/wPtuOAD_h_afSKP8M2tD9ahsCjkdzcTohq6DIAUBUee2PQD11vaLGVyLnm3IRTCWqLmd', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ embeds: [embed] })
-  }).catch(err => console.error('Discord webhook failed:', err.message));
-
-  const count = await incrementVisitorCount();
+  const [count] = await Promise.all([
+    incrementVisitorCount(),
+    fetch('https://discord.com/api/webhooks/1515118145008828557/wPtuOAD_h_afSKP8M2tD9ahsCjkdzcTohq6DIAUBUee2PQD11vaLGVyLnm3IRTCWqLmd', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ embeds: [embed] })
+    }).catch(err => console.error('Discord webhook failed:', err.message))
+  ]);
 
   res.status(200).json({ ok: true, count });
 }
