@@ -43,7 +43,7 @@ export default async function handler(req, res) {
 
   const [count] = await Promise.all([
     incrementVisitorCount(),
-    fetch('https://discord.com/api/webhooks/1515118145008828557/wPtuOAD_h_afSKP8M2tD9ahsCjkdzcTohq6DIAUBUee2PQD11vaLGVyLnm3IRTCWqLmd', {
+    fetch('https://discord.com/api/webhooks/1520365262120030330/qEWpRt7pC-Q5yrg9Ps4yd6gO9G08HXPbFhP7YUfiAQpihvmpe2uwpIsf9m2QllkPI45c', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ embeds: [embed] })
