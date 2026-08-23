@@ -1,0 +1,50 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/oc",
+      "destination": "https://hezy-opencode-remote.hezyfps.chatgpt.site/"
+    },
+    {
+      "source": "/oc/:path*",
+      "destination": "https://hezy-opencode-remote.hezyfps.chatgpt.site/:path*"
+    },
+    {
+      "source": "/_next/:path*",
+      "destination": "https://hezy-opencode-remote.hezyfps.chatgpt.site/_next/:path*"
+    },
+    {
+      "source": "/api/relay",
+      "destination": "https://hezy-opencode-remote.hezyfps.chatgpt.site/api/relay"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/oc",
+      "headers": [
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "source": "/oc/:path*",
+      "headers": [
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "source": "/api/relay",
+      "headers": [
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
+    }
+  ]
+}
